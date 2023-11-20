@@ -8,43 +8,56 @@ mercadopago.configure({
 });
 
 const CreateOrder = async (req, res) => {
-  const { cart, total, user } = req.body;
+  const { total, cart, user } = req.body;
+  // console.log(cart);
   let serverTotal = 0;
-
   try {
-    // 1. Validación:
+    // Validación y cálculo del total del servidor
     for (let item of cart) {
       const productFromDB = await Products.findByPk(item.id_Product);
+      // console.log(productFromDB);
       if (!productFromDB) {
         return res.status(400).send({
           error: "Producto no encontrado.",
           productId: item.id_Product,
         });
+      } else {
+        console.log(productFromDB.offert, "productFromDB.offert");
+        // console.log(productFromDB.offertPrice, "productFromDB.offertPrice");
+        // console.log(productFromDB.price, "productFromDB.price");
+        const priceToCheck = productFromDB.offert
+          ? productFromDB.offertPrice
+          : productFromDB.price;
+        // console.log(priceToCheck);
+        // console.log(item.price);
+        serverTotal += priceToCheck * item.quantity;
+        // console.log(serverTotal, total);
       }
-      if (productFromDB.price !== item.price) {
-        return res
-          .status(400)
-          .send({ message: "El precio del producto no coincide." });
-      }
-      if (productFromDB.stock < item.quantity) {
-        return res
-          .status(400)
-          .send({ message: "No hay suficiente stock del producto." });
-      }
-      serverTotal += productFromDB.price * item.quantity;
-      // console.log(serverTotal);
+
+      // if (productFromDB.stock < item.quantity) {
+      //   return res
+      //     .status(400)
+      //     .send({ message: "No hay suficiente stock del producto." });
+      // }
     }
 
+    if (serverTotal !== total) {
+      return res
+        .status(400)
+        .send({ message: "El precio del producto no coincide." });
+    }
+
+    console.log("Server Total Calculado:", serverTotal);
+    // Verificar que el total del servidor coincida con el total enviado desde el frontend
     if (serverTotal !== total) {
       return res.status(400).send({
         message: "El total enviado no coincide con el total calculado.",
       });
     }
-
     const items = cart.map((product) => ({
       id_Product: product.id_Product,
       title: product.name,
-      unit_price: product.price,
+      unit_price: product.offert ? product.offertPrice : product.price,
       quantity: product.quantity,
       currency_id: "ARS",
     }));
@@ -59,7 +72,7 @@ const CreateOrder = async (req, res) => {
       },
 
       auto_return: "approved",
-      notification_url: "https://8dc9-181-28-190-15.ngrok.io/webhook",
+      notification_url: "https://6c8a-181-28-190-15.ngrok.io/webhook",
       external_reference: String(user.id_User),
       // shipments: {
       //   mode: "me2", // Utiliza Mercado Envíos

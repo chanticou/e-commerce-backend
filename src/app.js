@@ -27,7 +27,9 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/", require("./routes/users_routes.js"));
 app.use("/", require("./routes/products_routes.js"));
 app.use("/", require("./routes/category_routes.js"));
+
 app.use("/", require("./routes/payments_routes.js"));
+app.use("/images", express.static(path.join(__dirname, "/assets/images")));
 
 sequelize
   .authenticate()
@@ -35,7 +37,7 @@ sequelize
   .catch((err) => console.log(err.message));
 
 (async function () {
-  await sequelize.sync({ force: true });
+  await sequelize.sync({ force: false });
   saveDataBase();
   console.log("Datos guardados en la BD");
   app.listen(PORT, () => console.log("Listening on port ", PORT));

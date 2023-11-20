@@ -1,16 +1,18 @@
 const Products = require("../models/products.js");
 const Category_products = require("../models/category_products.js");
-const allProducts = require("../services/allProducts.json");
+// const allProducts = require("../services/allProducts.json");
+
 const fs = require("fs").promises;
 
 const saveDataBase = async (req, res) => {
   try {
     // Read file json
     const data = await fs.readFile(
-      "../api/src/services/allProducts.json",
+      "../api/src/services/allProducts.js",
       "utf8"
     );
     const allProducts = JSON.parse(data);
+
     const productCount = await Products.count();
     const categoryCount = await Category_products.count();
 
@@ -19,7 +21,7 @@ const saveDataBase = async (req, res) => {
         const productArray = allProducts[categoryKey];
 
         const category = await Category_products.create({
-          type: categoryKey, // You need to have a 'type' field in your Category model
+          type: categoryKey,
         });
 
         for (const product of productArray) {
@@ -28,8 +30,7 @@ const saveDataBase = async (req, res) => {
             sku: product.sku,
             name: product.nombre,
             description: product.descripcion,
-            thumbnail:
-              "https://res.cloudinary.com/dg05pzjsq/image/upload/v1699466211/1_pgcvlf.jpg",
+            thumbnail: product.thumbnail,
             price: product.price,
             stock: product.stock,
           });
@@ -48,7 +49,7 @@ const getAllProducts = async (req, res) => {
   try {
     // await saveDataBase();
     let callDB = await Products.findAll();
-    // console.log(callDB);
+    console.log(callDB);
 
     if (!callDB.length)
       res.send({
@@ -59,18 +60,22 @@ const getAllProducts = async (req, res) => {
     return err.message;
   }
 };
-
 const createProduct = async (req, res) => {
   try {
     let body = req.body;
     let file = req.file;
-    console.log(body);
+
     if (!file) throw new Error("No se cargo correctamente la imagen");
 
     body.thumbnail = `${req.protocol}://${req.hostname}:4000/public/img/${file.filename}`;
 
+    if (body.offert && !body.offertPrice) {
+      throw new Error(
+        "Se especificó oferta pero no se proporcionó el precio de oferta."
+      );
+    }
     const product = await Products.create(body);
-
+    console.log(product);
     res
       .status(201)
       .json({ message: "Producto creado", payload: product.toJSON() });

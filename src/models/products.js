@@ -36,7 +36,14 @@ const Products = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    // Puedes agregar cualquier otro campo relevante aquí
+    offert: {
+      type: DataTypes.BOOLEAN,
+      allowNull: true,
+    },
+    offertPrice: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
   },
   {
     timestamps: false,

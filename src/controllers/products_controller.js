@@ -50,7 +50,6 @@ const getAllProducts = async (req, res) => {
     // await saveDataBase();
     let callDB = await Products.findAll();
     console.log(callDB);
-
     if (!callDB.length)
       res.send({
         message: "No hay productos en la base de datos",

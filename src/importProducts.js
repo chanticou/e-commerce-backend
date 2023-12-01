@@ -7,7 +7,7 @@ const path = require("path");
 const imagesFolderPath = path.join(__dirname, "./assets/images/PCGM");
 
 // Leer el archivo Excel
-const workbook = XLSX.readFile("Chantal prueba 1.xlsx");
+const workbook = XLSX.readFile("actualizaciones.xlsx");
 const sheet_name_list = workbook.SheetNames;
 const products = XLSX.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]], {
   range: 1,
@@ -29,6 +29,42 @@ products.forEach((product) => {
     ? "kit_pc_gamer"
     : product.CODIGO.startsWith("PCHO")
     ? "kit_pc_hogar_u_oficina"
+    : product.CODIGO.startsWith("AMIC")
+    ? "auriculares_microfonos"
+    : product.CODIGO.startsWith("CAMA")
+    ? "camaras"
+    : product.CODIGO.startsWith("COOL")
+    ? "combos_actualizacion"
+    : product.CODIGO.startsWith("PCHO")
+    ? "refrigeracion"
+    : product.CODIGO.startsWith("GTES")
+    ? "gabinetes"
+    : product.CODIGO.startsWith("IMPR")
+    ? "impresoras"
+    : product.CODIGO.startsWith("JOYS")
+    ? "joystick"
+    : product.CODIGO.startsWith("MONI")
+    ? "monitores"
+    : product.CODIGO.startsWith("MOUS")
+    ? "mouses"
+    : product.CODIGO.startsWith("NOTE")
+    ? "note_books"
+    : product.CODIGO.startsWith("PEND")
+    ? "pen_drives"
+    : product.CODIGO.startsWith("REDS")
+    ? "conectividad_redes"
+    : product.CODIGO.startsWith("TEMO")
+    ? "teclado_mouse"
+    : product.CODIGO.startsWith("AMIC")
+    ? "auriculares_microfonos"
+    : product.CODIGO.startsWith("VIDE")
+    ? "placas_video"
+    : product.CODIGO.startsWith("MICR")
+    ? "microprocesador"
+    : product.CODIGO.startsWith("MEMO")
+    ? "memorias_ram"
+    : product.CODIGO.startsWith("ALMA")
+    ? "almacenamiento"
     : "otros";
 
   const newProduct = {
@@ -56,7 +92,7 @@ fs.writeFile(
 );
 
 // const DeleteProducts = async () => {
-//   const filePath = "./services/allProducts.json";
+//   const filePath = "./services/allProducts.js";
 
 //   fs.unlink(filePath, (err) => {
 //     if (err) {
@@ -67,3 +103,28 @@ fs.writeFile(
 //   });
 // };
 // DeleteProducts();
+
+// const categoryMapping = {
+//   PEND: "",
+//   NOTE: "",
+//   MONI: "",
+//   IMPR: "",
+//   JOYS: "",
+//   MOUS: "",
+//   CAMA: "",
+//   AMIC: "",
+//   TEMO: "",
+//   COOL: "",
+//   COMB: "",
+//   REDS: "",
+//   GTES: "",
+//   FTES: "",
+//   VIDE: "",
+//   MICR: "",
+//   MEMO: "",
+//   ALMA: "",
+//   MOTH: "motherboard",
+//   PCGM: "",
+//   PCHO: "",
+//   // Agrega más mapeos según sea necesario
+// };

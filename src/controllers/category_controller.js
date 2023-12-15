@@ -1,6 +1,3 @@
-// const Products = require("../models/products");
-// const Category_products = require("../models/category_products");
-
 const Products = require("../models/products");
 const Category_products = require("../models/category_products");
 
@@ -16,7 +13,6 @@ const getAllCategories = async (req, res) => {
 const getProductsByCategory = async (req, res) => {
   try {
     const categoryId = req.params.categoryId;
-    // console.log(categoryId)
 
     const products = await Products.findAll({
       where: { categoryId: categoryId },

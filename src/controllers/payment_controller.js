@@ -1,15 +1,26 @@
 const mercadopago = require("mercadopago");
 const Products = require("../models/products.js");
 const Order = require("../models/Order.js");
+const winston = require("winston");
 require("dotenv").config();
 
 mercadopago.configure({
   access_token: process.env.MERCADO_PAGO_TOKEN,
 });
-
+const logger = winston.createLogger({
+  level: "error",
+  format: winston.format.json(),
+  defaultMeta: { service: "user-service" },
+  transports: [
+    //
+    // - Write all logs with level `error` and below to `error.log`
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    // - Write all logs with level `info` and below to `combined.log`
+    new winston.transports.File({ filename: "combined.log" }),
+  ],
+});
 const CreateOrder = async (req, res) => {
   const { total, cart, user } = req.body;
-  // console.log(cart);
   let serverTotal = 0;
   try {
     // Validación y cálculo del total del servidor
@@ -22,16 +33,11 @@ const CreateOrder = async (req, res) => {
           productId: item.id_Product,
         });
       } else {
-        console.log(productFromDB.offert, "productFromDB.offert");
-        // console.log(productFromDB.offertPrice, "productFromDB.offertPrice");
-        // console.log(productFromDB.price, "productFromDB.price");
         const priceToCheck = productFromDB.offert
           ? productFromDB.offertPrice
           : productFromDB.price;
-        // console.log(priceToCheck);
-        // console.log(item.price);
+
         serverTotal += priceToCheck * item.quantity;
-        // console.log(serverTotal, total);
       }
 
       // if (productFromDB.stock < item.quantity) {
@@ -46,9 +52,6 @@ const CreateOrder = async (req, res) => {
         .status(400)
         .send({ message: "El precio del producto no coincide." });
     }
-
-    console.log("Server Total Calculado:", serverTotal);
-    // Verificar que el total del servidor coincida con el total enviado desde el frontend
     if (serverTotal !== total) {
       return res.status(400).send({
         message: "El total enviado no coincide con el total calculado.",
@@ -66,13 +69,14 @@ const CreateOrder = async (req, res) => {
       items: items,
       // ACTUALIZAR ESTAR URLS HARCODEADAS
       back_urls: {
-        success: "http://localhost:3000/approved",
-        failure: "http://localhost:3000/failure",
-        pending: "http://localhost:4000/pending",
+        success: "https://solsoftcomputacion.com.ar//approved",
+        failure: "https://solsoftcomputacion.com.ar//failure",
+        pending: "https://solsoftcomputacion.com.ar//pending",
       },
 
       auto_return: "approved",
-      notification_url: "https://6c8a-181-28-190-15.ngrok.io/webhook",
+      notification_url: "https://solsoftcomputacion.com.ar/webhook",
+      // notification_url: "https://6c8a-181-28-190-15.ngrok.io/webhook",
       external_reference: String(user.id_User),
       // shipments: {
       //   mode: "me2", // Utiliza Mercado Envíos
@@ -87,7 +91,7 @@ const CreateOrder = async (req, res) => {
 
     res.send({ ...response.body, redirectUrl: response.body.init_point });
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     res.status(500).send({ message: "Error interno del servidor." });
   }
 };
@@ -123,7 +127,7 @@ const recibingWebhook = async (req, res) => {
         description: paymentDetails.description,
         live_mode: paymentDetails.live_mode,
       };
-      // console.log(paymentData);
+
       await Order.create(paymentData);
       const userId = paymentDetails.external_reference;
       await Order.update(
@@ -137,7 +141,7 @@ const recibingWebhook = async (req, res) => {
     return res.sendStatus(204);
     // }
   } catch (err) {
-    console.error("Error while processing webhook:", err.message);
+    logger.error(err);
     return res.status(500).json({ error: err.message });
   }
 };
@@ -145,26 +149,24 @@ const recibingWebhook = async (req, res) => {
 const Success = async (req, res) => {
   try {
     res.send("Success");
-    console.log(
-      "AKAAA ESTA EL AMLDITO SUCCESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
-    );
   } catch (err) {
+    logger.error(err);
     res.send(err.message);
   }
 };
 const Failure = async (req, res) => {
   try {
     res.send("Failure");
-    console.log("failure");
   } catch (err) {
+    logger.error(err);
     res.send(err.message);
   }
 };
 const Pending = async (req, res) => {
   try {
     res.send("Pending");
-    console.log("pending");
   } catch (err) {
+    logger.error(err);
     res.send(err.message);
   }
 };
@@ -185,6 +187,7 @@ const GetPaymentDetails = async (req, res) => {
 
     res.json(orderDetails);
   } catch (err) {
+    logger.error(err);
     console.error("Error al obtener detalles del pago:", err.message);
     return res.status(500).json({ error: err.message });
   }

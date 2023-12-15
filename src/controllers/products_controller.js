@@ -1,6 +1,19 @@
 const Products = require("../models/products.js");
 const Category_products = require("../models/category_products.js");
-// const allProducts = require("../services/allProducts.json");
+const winston = require("winston");
+
+const logger = winston.createLogger({
+  level: "error",
+  format: winston.format.json(),
+  defaultMeta: { service: "user-service" },
+  transports: [
+    //
+    // - Write all logs with level `error` and below to `error.log`
+    new winston.transports.File({ filename: "error.log", level: "error" }),
+    // - Write all logs with level `info` and below to `combined.log`
+    new winston.transports.File({ filename: "combined.log" }),
+  ],
+});
 
 const fs = require("fs").promises;
 
@@ -20,8 +33,14 @@ const saveDataBase = async (req, res) => {
       for (const categoryKey in allProducts) {
         const productArray = allProducts[categoryKey];
 
+        const thumbnail =
+          productArray && productArray[0]
+            ? productArray[0].thumbnail
+            : undefined;
+
         const category = await Category_products.create({
           type: categoryKey,
+          thumbnail: thumbnail,
         });
 
         for (const product of productArray) {
@@ -41,21 +60,21 @@ const saveDataBase = async (req, res) => {
       console.log("Data already exists");
     }
   } catch (err) {
-    console.log(err);
+    logger.error(err);
   }
 };
 
 const getAllProducts = async (req, res) => {
   try {
-    // await saveDataBase();
     let callDB = await Products.findAll();
-    console.log(callDB);
     if (!callDB.length)
       res.send({
         message: "No hay productos en la base de datos",
       });
+    console.log(callDB);
     res.status(200).json({ message: "Scucces", payload: callDB });
   } catch (err) {
+    logger.error(err);
     return err.message;
   }
 };
@@ -74,11 +93,12 @@ const createProduct = async (req, res) => {
       );
     }
     const product = await Products.create(body);
-    console.log(product);
+
     res
       .status(201)
       .json({ message: "Producto creado", payload: product.toJSON() });
   } catch (err) {
+    logger.error(err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -86,8 +106,7 @@ const createProduct = async (req, res) => {
 const deleteProductDataBase = async (req, res) => {
   try {
     const id_Product = req.params.id_product;
-    const data = req.body;
-    console.log(req.params);
+
     const product = await Products.findOne({
       where: {
         id_Product: id_Product,
@@ -100,6 +119,7 @@ const deleteProductDataBase = async (req, res) => {
     await product.destroy();
     res.status(200).json({ message: "Product successfully deleted" });
   } catch (err) {
+    logger.error(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -118,7 +138,7 @@ const getById = async (req, res) => {
       res.status(404).json({ error: "Producto no encontrado" });
     }
   } catch (error) {
-    console.error(error);
+    logger.error(err);
     res.status(500).json({ error: "Error en el servidor" });
   }
 };
@@ -144,7 +164,7 @@ const UpdateProduct = async (req, res) => {
       product: updatedProduct,
     });
   } catch (error) {
-    console.error(error);
+    logger.error(err);
     res.status(500).json({ error: "Error en el servidor" });
   }
 };

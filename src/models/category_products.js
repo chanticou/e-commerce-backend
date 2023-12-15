@@ -10,6 +10,9 @@ const Category_products = sequelize.define("Category_products", {
   type: {
     type: DataTypes.STRING,
   },
+  thumbnail: {
+    type: DataTypes.STRING,
+  },
 });
 
 module.exports = Category_products;

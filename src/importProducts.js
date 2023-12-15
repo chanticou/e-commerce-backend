@@ -22,7 +22,7 @@ products.forEach((product) => {
   const imageFile = imageFiles.find((file) => file.includes(product.CODIGO));
   // console.log(imageFile);
   const imageUrl = imageFile
-    ? `http://localhost:4000/images/PCGM/${imageFile}`
+    ? `https://solsoftcomputacion.com.ar//images/PCGM/${imageFile}`
     : "https://res.cloudinary.com/dg05pzjsq/image/upload/v1696873639/pexels-sinden-sunna-3029916_xn3wju.jpg";
 
   const tipo = product.CODIGO.startsWith("PCGM")

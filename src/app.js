@@ -1,14 +1,15 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const morgan = require("morgan");
 const cors = require("cors");
 const sequelize = require("./config/db.js");
-const PORT = 4000;
+
+const PORT = process.env.PORT || 3000;
 const path = require("path");
 // Importo las asociaciones
 require("./models/associations.js");
 const { saveDataBase } = require("./controllers/products_controller.js");
-require("dotenv").config();
 
 //midlewares
 app.use(express.json());

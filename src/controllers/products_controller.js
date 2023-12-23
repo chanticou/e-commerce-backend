@@ -58,6 +58,7 @@ const saveDataBase = async (req, res) => {
       console.log("Data saved successfully");
     } else {
       console.log("Data already exists");
+      getAllProducts();
     }
   } catch (err) {
     logger.error(err);
@@ -67,17 +68,19 @@ const saveDataBase = async (req, res) => {
 const getAllProducts = async (req, res) => {
   try {
     let callDB = await Products.findAll();
+
     if (!callDB.length)
       res.send({
         message: "No hay productos en la base de datos",
       });
-    console.log(callDB);
+    // console.log(callDB);
     res.status(200).json({ message: "Scucces", payload: callDB });
   } catch (err) {
     logger.error(err);
     return err.message;
   }
 };
+
 const createProduct = async (req, res) => {
   try {
     let body = req.body;

@@ -68,15 +68,21 @@ const CreateOrder = async (req, res) => {
     const preference = {
       items: items,
       // ACTUALIZAR ESTAR URLS HARCODEADAS
+      // success: "https://solsoftcomputacion.com.ar//approved",
+      // failure: "https://solsoftcomputacion.com.ar//failure",
+      // pending: "https://solsoftcomputacion.com.ar//pending",
       back_urls: {
-        success: "https://solsoftcomputacion.com.ar//approved",
-        failure: "https://solsoftcomputacion.com.ar//failure",
-        pending: "https://solsoftcomputacion.com.ar//pending",
+        success: "https://5617-181-4-221-91.ngrok-free.app/approved",
+        failure: "https://5617-181-4-221-91.ngrok-free.app/failure",
+        pending: "https://5617-181-4-221-91.ngrok-free.app/pending",
       },
 
       auto_return: "approved",
-      notification_url: "https://solsoftcomputacion.com.ar/webhook",
+      notification_url: "https://5617-181-4-221-91.ngrok-free.app/webhook",
+      // notification_url: "https://localhost/webhook",
       // notification_url: "https://6c8a-181-28-190-15.ngrok.io/webhook",
+      // const webhookUrl = "https://5617-181-4-221-91.ngrok-free.app/webhook";
+
       external_reference: String(user.id_User),
       // shipments: {
       //   mode: "me2", // Utiliza Mercado Envíos
@@ -192,6 +198,23 @@ const GetPaymentDetails = async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 };
+const GetAllPayments = async (req, res) => {
+  try {
+    const orderDetails = await Order.findAll();
+
+    if (!orderDetails.length) {
+      return res
+        .status(404)
+        .json({ message: "No se encontraron pagos efectuados." });
+    }
+
+    res.json(orderDetails);
+  } catch (err) {
+    logger.error(err);
+    console.error("Error al obtener detalles del pago:", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+};
 
 module.exports = {
   CreateOrder,
@@ -200,4 +223,5 @@ module.exports = {
   Failure,
   Pending,
   GetPaymentDetails,
+  GetAllPayments,
 };
